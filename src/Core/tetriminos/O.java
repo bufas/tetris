@@ -4,16 +4,8 @@ import java.awt.*;
 
 public class O extends TetriminoAdapter {
 
-    boolean[][] getArray(int orientation) {
-        if (orientation < 0 || orientation > 3) {
-            return new boolean[][]{
-                    new boolean[]{false, true, true, false},
-                    new boolean[]{false, true, true, false}};
-        }
-
-        return  new boolean[][]{
-                new boolean[]{true, true},
-                new boolean[]{true, true}};
+    int[][] getArray(int orientation) {
+        return new int[][] {getPair(0,0), getPair(0,1), getPair(1,0), getPair(1,1)};
     }
 
     @Override
@@ -22,8 +14,8 @@ public class O extends TetriminoAdapter {
     }
 
     @Override
-    public int getInitY() { return 1; }
+    public int getInitRow() { return 1; }
 
     @Override
-    public int getInitX() { return 4; }
+    public int getInitCol() { return 4; }
 }

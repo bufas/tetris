@@ -4,37 +4,17 @@ import java.awt.*;
 
 public class T extends TetriminoAdapter {
 
-    boolean[][] getArray(int orientation) {
+    int[][] getArray(int orientation) {
         switch (orientation) {
-            case 0:
-                return  new boolean[][]{
-                        new boolean[]{false, true,  false},
-                        new boolean[]{true,  true,  true },
-                        new boolean[]{false, false, false}};
-            case 1:
-                return  new boolean[][]{
-                        new boolean[]{false, true,  false},
-                        new boolean[]{false, true,  true },
-                        new boolean[]{false, true,  false}};
-            case 2:
-                return  new boolean[][]{
-                        new boolean[]{false, false, false},
-                        new boolean[]{true,  true,  true },
-                        new boolean[]{false, true,  false}};
-            case 3:
-                return  new boolean[][]{
-                        new boolean[]{false, true,  false},
-                        new boolean[]{true,  true,  false},
-                        new boolean[]{false, true,  false}};
-            default:
-                return  new boolean[][]{
-                        new boolean[]{true,  true,  true,  false},
-                        new boolean[]{false, true,  false, false}};
+            case 0:  return new int[][]{getPair(0,1), getPair(1,1), getPair(1,2), getPair(2,1)};
+            case 1:  return new int[][]{getPair(1,0), getPair(1,1), getPair(1,2), getPair(2,2)};
+            case 2:  return new int[][]{getPair(0,1), getPair(1,0), getPair(1,1), getPair(2,1)};
+            default: return new int[][]{getPair(0,1), getPair(1,0), getPair(1,1), getPair(1,2)};
         }
     }
 
     @Override
-    public int getInitY() { return 1; }
+    public int getInitRow() { return 1; }
 
     @Override
     public Color getColor() {
