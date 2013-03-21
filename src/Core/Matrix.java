@@ -23,18 +23,54 @@ public class Matrix {
      * @return the row as an array
      */
     public MatrixSlot[] getRow(int row) {
-        return matrix[row-1];
+        return matrix[row2index(row)];
     }
 
+    /**
+     * Get the value of the slot at (row,col)
+     * @param row the row
+     * @param col the column
+     * @return the value of the slot located at (row,col)
+     */
+    public MatrixSlot getSlot(int row, int col) {
+        return matrix[row2index(row)][col2index(col)];
+    }
+
+    /**
+     * Removes a row from the matrix
+     * @param row the index of the row to remove. 1 is the bottom row.
+     */
     public void clearRow(int row) {
-        for (int i = row-1; i > 0; i++) {
+        for (int i = row2index(row); i > 0; i++) {
             matrix[i] = matrix[i+1].clone();
         }
         matrix[HEIGHT-1] = emptyRow();
     }
 
     /**
-     * Get an empty row
+     * Check if a row is empty.
+     * @param row the row to check for emptiness
+     * @return true if the row is empty false otherwise
+     */
+    public boolean isEmpty(int row) {
+        for (MatrixSlot slot : matrix[row2index(row)])
+            if (slot != MatrixSlot.EMPTY) return false;
+        return true;
+    }
+
+    /**
+     * Check if a row is full.
+     * @param row the row to check
+     * @return true if the row is full, false otherwise
+     */
+    public boolean isFull(int row) {
+        for (MatrixSlot slot : matrix[row2index(row)])
+            if (slot == MatrixSlot.EMPTY) return false;
+        return true;
+    }
+
+    /**
+     * Helper method to get an empty row
      * @return an empty row
      */
     private MatrixSlot[] emptyRow() {
@@ -42,4 +78,18 @@ public class Matrix {
         for (int i = 0; i < WIDTH; i++) result[i] = MatrixSlot.EMPTY;
         return result;
     }
+
+    /**
+     * Converts a row number to the corresponding index in the array
+     * @param row row number to convert
+     * @return the index of the row in the array
+     */
+    private int row2index(int row) { return row-1; }
+
+    /**
+     * Converts a column number to the corresponding index in the array
+     * @param col column number to convert
+     * @return the index of the column in the array
+     */
+    private int col2index(int col) { return col-1; }
 }
