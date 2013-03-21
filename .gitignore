@@ -1,0 +1,10 @@
+*.class
+
+*.iml
+MANIFEST.MF
+.idea/*
+
+# Package Files #
+*.jar
+*.war
+*.ear
