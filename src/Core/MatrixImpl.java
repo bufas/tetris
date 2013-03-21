@@ -1,5 +1,7 @@
 package Core;
 
+import Core.tetriminos.Tetrimino;
+
 public class MatrixImpl implements Matrix {
 
     private MatrixSlot[][] matrix;
@@ -12,7 +14,7 @@ public class MatrixImpl implements Matrix {
 
     @Override
     public MatrixSlot[] getRow(int row) {
-        return matrix[row2index(row)];
+        return matrix[row2index(row)].clone();
     }
 
     @Override
@@ -21,11 +23,41 @@ public class MatrixImpl implements Matrix {
     }
 
     @Override
+    public boolean isCollision(int row, int col, Tetrimino mino) {
+        return isCollision(row, col, mino, Tetrimino.Rotation.ROTATE0);
+    }
+
+    @Override
+    public boolean isCollision(int row, int col, Tetrimino mino, Tetrimino.Rotation rotation) {
+        for (int[] block : mino.getArray(rotation))
+            if (!slotIsEmpty(row + block[0], col + block[1])) return false;
+        return true;
+    }
+
+    @Override
+    public boolean slotIsEmpty(int row, int col) {
+        if (outOfBounds(row,col)) return false;
+        return matrix[row2index(row)][col2index(col)] == MatrixSlot.EMPTY;
+    }
+
+    @Override
     public void clearRow(int row) {
         for (int i = row2index(row); i > 0; i++) {
             matrix[i] = matrix[i+1].clone();
         }
         matrix[HEIGHT-1] = emptyRow();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return isEmpty(1);
+    }
+
+    @Override
+    public void lockMino(Tetrimino mino, int row, int col) {
+        for (int[] block : mino.getArray()) {
+            setSlot(row + block[0], col + block[1], MatrixSlot.FILLED);
+        }
     }
 
     @Override
@@ -50,6 +82,22 @@ public class MatrixImpl implements Matrix {
         MatrixSlot[] result = new MatrixSlot[WIDTH];
         for (int i = 0; i < WIDTH; i++) result[i] = MatrixSlot.EMPTY;
         return result;
+    }
+
+    /**
+     * Fills a slot in the matrix with a specified type
+     */
+    private void setSlot(int row, int col, MatrixSlot type) {
+        if (!outOfBounds(row, col))
+            matrix[row2index(row)][col2index(col)] = type;
+    }
+
+    /**
+     * Check if the row or column given is not inside the matrix
+     * @return true if the row or column is not inside the matrix, false otherwise
+     */
+    private boolean outOfBounds(int row, int col) {
+        return row > HEIGHT || row < 1 || col < 1 || col > WIDTH;
     }
 
     /**
