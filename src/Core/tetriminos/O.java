@@ -3,9 +3,10 @@ package Core.tetriminos;
 import java.awt.*;
 
 public class O extends TetriminoAdapter {
+    private Offset[] state0 = new Offset[]{getPair(0,0), getPair(0,1), getPair(1,0), getPair(1,1)};
 
-    int[][] getArray(int orientation) {
-        return new int[][] {getPair(0,0), getPair(0,1), getPair(1,0), getPair(1,1)};
+    Offset[] getArray(int orientation) {
+        return state0;
     }
 
     @Override
@@ -14,8 +15,5 @@ public class O extends TetriminoAdapter {
     }
 
     @Override
-    public int getInitRow() { return 1; }
-
-    @Override
-    public int getInitCol() { return 4; }
+    public int getInitCol() { return 5; }
 }

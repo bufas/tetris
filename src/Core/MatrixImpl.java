@@ -1,5 +1,6 @@
 package Core;
 
+import Core.tetriminos.Offset;
 import Core.tetriminos.Tetrimino;
 
 public class MatrixImpl implements Matrix {
@@ -29,22 +30,21 @@ public class MatrixImpl implements Matrix {
 
     @Override
     public boolean isCollision(int row, int col, Tetrimino mino, Tetrimino.Rotation rotation) {
-        for (int[] block : mino.getArray(rotation))
-            if (!slotIsEmpty(row + block[0], col + block[1])) return false;
-        return true;
+        for (Offset offset : mino.getArray(rotation))
+            if (!slotIsEmpty(row + offset.getY(), col + offset.getX())) return true;
+        return false;
     }
 
     @Override
     public boolean slotIsEmpty(int row, int col) {
-        if (outOfBounds(row,col)) return false;
+        if (outOfBounds(row, col)) return false;
         return matrix[row2index(row)][col2index(col)] == MatrixSlot.EMPTY;
     }
 
     @Override
     public void clearRow(int row) {
-        for (int i = row2index(row); i > 0; i++) {
+        for (int i = row2index(row); i < HEIGHT-1; i++)
             matrix[i] = matrix[i+1].clone();
-        }
         matrix[HEIGHT-1] = emptyRow();
     }
 
@@ -55,9 +55,8 @@ public class MatrixImpl implements Matrix {
 
     @Override
     public void lockMino(Tetrimino mino, int row, int col) {
-        for (int[] block : mino.getArray()) {
-            setSlot(row + block[0], col + block[1], MatrixSlot.FILLED);
-        }
+        for (Offset offset : mino.getArray())
+            setSlot(row + offset.getY(), col + offset.getX(), MatrixSlot.FILLED);
     }
 
     @Override

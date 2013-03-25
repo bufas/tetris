@@ -3,20 +3,15 @@ package Core;
 import Core.queue.MinoPickStrategy;
 import Core.rotation.RotationStrategy;
 import Core.scoring.ScoringStrategy;
+import Core.tetriminos.Offset;
 import Core.tetriminos.T;
 import Core.tetriminos.Tetrimino;
-
-import java.awt.*;
-import java.util.Arrays;
 
 public class Engine {
 
     public enum Move {NONE, SINGLE, DOUBLE, TRIPLE, TETRIS, TSPIN, TSPINDOUBLE};
 
-    public static final int HEIGHT = 22;
-    public static final int WIDTH  = 10;
-
-    private Color[][] matrix;
+    private Matrix matrix;
     private Tetrimino mino;
 
     private int xPos;
@@ -44,20 +39,11 @@ public class Engine {
         notifyHelper = new NotifyHelper();
 
         // Initialize the matrix
-        matrix = new Color[HEIGHT][WIDTH];
-        for(int y=0; y<HEIGHT; y++) {
-            for(int x=0; x<WIDTH; x++) {
-                matrix[y][x] = null;
-            }
-        }
-
-        matrix[HEIGHT-3] = new Color[] {Color.blue,Color.blue,Color.blue,null,null,Color.blue,Color.blue,Color.blue,Color.blue,Color.blue};
-        matrix[HEIGHT-2] = new Color[] {Color.blue,Color.blue,null,null,null,Color.blue,Color.blue,Color.blue,Color.blue,Color.blue};
-        matrix[HEIGHT-1] = new Color[] {Color.blue,Color.blue,Color.blue,null,Color.blue,Color.blue,Color.blue,Color.blue,Color.blue,Color.blue};
+        matrix = new MatrixImpl();
 
         mino = minoPickStrategy.getTetrimino();
-        xPos = mino.getInitX();
-        yPos = mino.getInitY();
+        xPos = mino.getInitCol();
+        yPos = mino.getInitRow();
     }
 
     /**
@@ -77,8 +63,8 @@ public class Engine {
      * to move down, the mino will get locked.
      */
     public void softDrop() {
-        if (!collision(xPos, yPos+1, mino.getArray(null))) {
-            yPos++;
+        if (!matrix.isCollision(yPos-1, xPos, mino)) {
+            yPos--;
             scoringStrategy.scoreSoftDrop(1);
             notifyHelper.notifySoftDrop();
         } else {
@@ -91,9 +77,9 @@ public class Engine {
      */
     public void hardDrop() {
         int length = 0;
-        while(!collision(xPos, yPos+length+1, mino.getArray(null))) length++;
+        while(!matrix.isCollision(yPos-length-1, xPos, mino)) length++;
 
-        yPos += length;
+        yPos -= length;
         scoringStrategy.scoreHardDrop(length);
         notifyHelper.notifyHardDrop(length);
         lockPiece();
@@ -116,8 +102,8 @@ public class Engine {
             holdUsed = true;
 
             // Reset the height
-            xPos = mino.getInitX();
-            yPos = mino.getInitY();
+            xPos = mino.getInitCol();
+            yPos = mino.getInitRow();
 
             // Notify observers
             notifyHelper.notifyHoldTetrimino();
@@ -126,59 +112,21 @@ public class Engine {
     }
 
     /**
-     * Merge a tetrimino into the matrix
-     * @param matrix the matrix to merge the mino into
-     */
-    private void copyMinoToMatrix(Color[][] matrix) {
-        // Add the current piece to the matrix
-        boolean[][] minoArr = mino.getArray(null);
-        for (int y=0; y < minoArr.length; y++) {
-            for (int x=0; x < minoArr[0].length; x++) {
-                boolean outOfBounds = xPos + x < 0 || xPos + x >= WIDTH || yPos + y < 0 || yPos + y >= HEIGHT;
-                if (outOfBounds || !minoArr[y][x]) continue;
-                matrix[yPos+y][xPos+x] = mino.getColor();
-            }
-        }
-    }
-
-    /**
      * Lock a tetrimino to the matrix and spawn the next one
      */
     private void lockPiece() {
-        copyMinoToMatrix(matrix);
+        matrix.lockMino(mino, yPos, xPos);
 
-        Move thisMove = Move.NONE;
+        Move thisMove;
         boolean possibleMatrixClean = false;
 
-        // Clear lines
+        // Clear lines TODO optimize this to check only possible lines
         int lines = 0;
-        for (int i = 0; i < mino.getArray(null).length; i++) {
-            for (boolean cell : mino.getArray(null)[i]) {
-                if (cell) {
-                    // Line yPos + i is possibly filled, check it
-                    int row = yPos+i;
-                    boolean clear = true;
-
-                    // Check that there are no empty slots in the row
-                    for (Color c : matrix[row]) {
-                        if (c == null) {
-                            clear = false; // The line is not full
-                            continue;
-                        }
-                    }
-
-                    if (clear) {
-                        // Clear the line
-                        for (int q = row; q > 0; q--) {
-                            matrix[q] = matrix[q-1].clone();
-                        }
-                        matrix[0] = new Color[] {null,null,null,null,null,null,null,null,null,null};
-                        lines++;
-                        if (row == HEIGHT-1) possibleMatrixClean = true;
-                    }
-
-                    continue;
-                }
+        for (int row = 20; row > 0; row--) {
+            if(matrix.isFull(row)) {
+                matrix.clearRow(row);
+                lines++;
+                if (row == 1) possibleMatrixClean = true;
             }
         }
 
@@ -206,11 +154,7 @@ public class Engine {
 
             // Check for matrix clean
             if (possibleMatrixClean) {
-                boolean matrixClean = true;
-                for (Color c : matrix[HEIGHT-1]) {
-                    if (c == null) { matrixClean = false; continue; }
-                }
-                if (matrixClean) notifyHelper.notifyMatrixClean();
+                if (matrix.isEmpty()) notifyHelper.notifyMatrixClean();
             }
         } else {
             // No lines cleared, reset comboCounter counter
@@ -228,22 +172,18 @@ public class Engine {
      */
     private Move detectTSpin(int lines) {
         if (lines > 0 && mino instanceof T) {
-            // Check if there are anything on over the brick
-            boolean[][] minoArray = mino.getArray(null);
-            for (int row = 0; row < minoArray.length; row++) {
-                for (int col = 0; col < minoArray[row].length; col++) {
-                    if (minoArray[row][col] && matrix[yPos+row-1][xPos+col] != null) {
-                        // We have got a T-spin
-                        if (lines == 1) {
-                            notifyHelper.notifyTspin(lastLockdown == Move.TSPIN);
-                            System.out.println("TSPIN");
-                            return Move.TSPIN;
-                        }
-                        if (lines == 2) {
-                            notifyHelper.notifyTspinDouble(lastLockdown == Move.TSPINDOUBLE);
-                            System.out.println("TSPINDOUBLE");
-                            return Move.TSPINDOUBLE;
-                        }
+            for (Offset offset : mino.getArray()) {
+                if (!matrix.slotIsEmpty(yPos + offset.getY() + 1, xPos + offset.getX())) {
+                    // We have got a T-spin
+                    if (lines == 1) {
+                        notifyHelper.notifyTspin(lastLockdown == Move.TSPIN);
+                        System.out.println("TSPIN");
+                        return Move.TSPIN;
+                    }
+                    if (lines == 2) {
+                        notifyHelper.notifyTspinDouble(lastLockdown == Move.TSPINDOUBLE);
+                        System.out.println("TSPINDOUBLE");
+                        return Move.TSPINDOUBLE;
                     }
                 }
             }
@@ -264,22 +204,25 @@ public class Engine {
 
         // Start the next mino
         mino = minoPickStrategy.getTetrimino();
-        xPos = mino.getInitX();
-        yPos = mino.getInitY();
+        xPos = mino.getInitCol();
+        yPos = mino.getInitRow();
     }
 
     /**
-     * Get a fresh copy of the matrix
-     * @return a fresh copy of the matrix
+     * Find out what is the status of a slot in the matrix
+     * @return the status of the queried slot
      */
-    public Color[][] getMatrix() {
-        // Create a copy of the matrix
-        Color[][] clone = new Color[HEIGHT][WIDTH];
-        for(int h=0; h<HEIGHT; h++) clone[h] = Arrays.copyOf(matrix[h], WIDTH);
-
-        // Add the current mino to the copy
-        copyMinoToMatrix(clone);
-        return clone;
+    public Matrix.MatrixSlot getSlot(int row, int col) {
+        if (matrix.slotIsEmpty(row, col)) {
+            // Check if the current mino occupies the space
+            for (Offset offset : mino.getArray()) {
+                if (yPos + offset.getY() == row && xPos + offset.getX() == col) {
+                    return Matrix.MatrixSlot.FILLED;
+                }
+            }
+            return Matrix.MatrixSlot.EMPTY;
+        }
+        return matrix.getSlot(row, col);
     }
 
     /**
@@ -313,7 +256,7 @@ public class Engine {
      * Move the mino right if possible
      */
     public void moveRight() {
-        if (!collision(xPos+1, yPos, mino.getArray(null))) {
+        if (!matrix.isCollision(yPos, xPos+1, mino)) {
             xPos++;
             notifyHelper.notifyMoveRight();
         }
@@ -324,7 +267,7 @@ public class Engine {
      * Move the mino left if possible
      */
     public void moveLeft() {
-        if (!collision(xPos-1, yPos, mino.getArray(null))) {
+        if (!matrix.isCollision(yPos, xPos-1, mino)) {
             xPos--;
             notifyHelper.notifyMoveLeft();
         }
@@ -347,24 +290,6 @@ public class Engine {
         boolean success = rotationStrategy.rotate(this, xPos, yPos, Tetrimino.Rotation.ROTATE270, mino, matrix);
         if (success) notifyHelper.notifyCCRotation();
         else notifyHelper.notifyCCRotateFail();
-    }
-
-    /**
-     * Check if it is possible to move a tetrimino to a given position
-     * @param xPos the x coordinate in the matrix
-     * @param yPos the y coordinate in the matrix
-     * @param mino the mino to check
-     * @return true if the move is possible, false otherwise
-     */
-    private boolean collision(int xPos, int yPos, boolean[][] mino) {
-        for (int y=0; y < mino.length; y++) {
-            for (int x=0; x < mino[y].length; x++) {
-                boolean outOfBounds = xPos + x < 0 || xPos + x >= WIDTH || yPos + y >= HEIGHT;
-                if (outOfBounds && mino[y][x]) return true; // check matrix bounds
-                if (!outOfBounds && yPos+y >= 0 && matrix[yPos+y][xPos+x]!=null && mino[y][x]) return true; // check for collisions
-            }
-        }
-        return false;
     }
 
 }

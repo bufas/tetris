@@ -4,12 +4,12 @@ public abstract class TetriminoAdapter implements Tetrimino {
     private int orientation = 0;
 
     @Override
-    public int[][] getArray() {
+    public Offset[] getArray() {
         return getArray(Rotation.ROTATE0);
     }
 
     @Override
-    public int[][] getArray(Rotation rotation) {
+    public Offset[] getArray(Rotation rotation) {
         switch (rotation) {
             case ROTATE0:   return getArray(orientation);
             case ROTATE90:  return getArray((orientation + 1) % 4);
@@ -35,21 +35,21 @@ public abstract class TetriminoAdapter implements Tetrimino {
 
     @Override
     public int getInitCol() {
-        return 3;
+        return 4;
     }
 
     @Override
     public int getInitRow() {
-        return 0;
+        return 20;
     }
 
     /**
      * Convenience method that takes two ints and returns an int array containing them
      */
-    int[] getPair(int x, int y) {
-        return new int[]{ x , y };
+    Offset getPair(int x, int y) {
+        return new Offset(x,y);
     }
 
-    abstract int[][] getArray(int orientation);
+    abstract Offset[] getArray(int orientation);
 
 }

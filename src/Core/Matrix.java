@@ -57,8 +57,8 @@ public interface Matrix {
     /**
      * Lock a mino in the matrix
      * @param mino the mino to be locked
-     * @param row the row of the top left corner
-     * @param col the column of the top left corner
+     * @param row the row of the bottom left corner
+     * @param col the column of the bottom left corner
      */
     public void lockMino(Tetrimino mino, int row, int col);
 

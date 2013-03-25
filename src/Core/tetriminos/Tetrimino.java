@@ -9,14 +9,14 @@ public interface Tetrimino {
     /**
      * Shortcut for getArray(Rotation.ROTATE0);
      */
-    public int[][] getArray();
+    public Offset[] getArray();
 
     /**
      * Get the array describing the mino
      * @param rotation specifies if the array should be rotated before return
-     * @return the array describing the mino, rotated if specified
+     * @return an int array holding int pairs describing x-offset and y-offset respectively
      */
-    public int[][] getArray(Rotation rotation);
+    public Offset[] getArray(Rotation rotation);
 
     /**
      * Rotate the mino
