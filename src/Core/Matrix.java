@@ -7,7 +7,7 @@ public interface Matrix {
     int HEIGHT = 22;
     int WIDTH  = 10;
 
-    public enum MatrixSlot {EMPTY, GHOST, FILLED, // TODO remove 'FILLED'
+    public enum MatrixSlot {EMPTY, GHOST,
         I_OPEN, O_OPEN, J_OPEN, L_OPEN, Z_OPEN, S_OPEN, T_OPEN,
         I_LOCKED, O_LOCKED, J_LOCKED, L_LOCKED, Z_LOCKED, S_LOCKED, T_LOCKED}
 

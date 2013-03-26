@@ -55,27 +55,24 @@ public class MatrixUI extends JFrame {
             @Override
             public void paintIcon(Component c, Graphics g, int xPos, int yPos) {
                 for (int col = 1; col <= Matrix.WIDTH; col++) {
-                    if (game.getSlot(21, col) == Matrix.MatrixSlot.FILLED) {
-                        g.setColor(Color.BLUE);
+                    g.setColor(getColor(game.getSlot(21, col)));
+
+                    if (game.getSlot(21, col) != Matrix.MatrixSlot.EMPTY)
                         g.fillRect(xPos + (col-1) * 17, yPos, 15, partialRowHeight-2);
-                    } else {
-                        g.setColor(Color.LIGHT_GRAY);
+                    else
                         g.drawRect(xPos + (col-1) * 17, yPos, 15, partialRowHeight-2);
-                    }
                 }
 
                 for (int row = 20; row > 0; row--) {
                     for (int col = 1; col <= Matrix.WIDTH; col++) {
-                        if (game.getSlot(row, col) == Matrix.MatrixSlot.FILLED) {
-                            g.setColor(Color.BLUE);
+                        g.setColor(getColor(game.getSlot(row, col)));
+
+                        if (game.getSlot(row, col) != Matrix.MatrixSlot.EMPTY)
                             g.fillRect(xPos + (col-1) * 17, yPos + partialRowHeight + (20-row) * 17, 15, 15);
-                        } else if (game.getSlot(row, col) == Matrix.MatrixSlot.GHOST) {
-                            g.setColor(Color.DARK_GRAY);
+                        else if (game.getSlot(row, col) == Matrix.MatrixSlot.GHOST)
                             g.fillRect(xPos + (col-1) * 17, yPos + partialRowHeight + (20-row) * 17, 15, 15);
-                        } else {
-                            g.setColor(Color.LIGHT_GRAY);
+                        else
                             g.drawRect(xPos + (col-1) * 17, yPos + partialRowHeight + (20-row) * 17, 15, 15);
-                        }
                     }
                 }
             }
@@ -93,6 +90,30 @@ public class MatrixUI extends JFrame {
 
         this.pack();
         this.setVisible(true);
+    }
+
+    private Color getColor(Matrix.MatrixSlot slot) {
+        switch (slot) {
+            case I_OPEN:
+            case I_LOCKED: return Color.CYAN;
+            case J_OPEN:
+            case J_LOCKED: return Color.BLUE;
+            case L_OPEN:
+            case L_LOCKED: return Color.ORANGE;
+            case O_OPEN:
+            case O_LOCKED: return Color.YELLOW;
+            case S_OPEN:
+            case S_LOCKED: return Color.GREEN;
+            case Z_OPEN:
+            case Z_LOCKED: return Color.RED;
+            case T_OPEN:
+            case T_LOCKED: return new Color(255, 0, 255);
+
+            case GHOST:    return Color.LIGHT_GRAY;
+            case EMPTY:    return Color.LIGHT_GRAY;
+        }
+
+        return null;
     }
 
 }

@@ -1,7 +1,6 @@
 package Core;
 
-import Core.tetriminos.Offset;
-import Core.tetriminos.Tetrimino;
+import Core.tetriminos.*;
 
 public class MatrixImpl implements Matrix {
 
@@ -64,8 +63,17 @@ public class MatrixImpl implements Matrix {
 
     @Override
     public void lockMino(Tetrimino mino, int row, int col) {
+        MatrixSlot type = null;
+        if      (mino instanceof I) type = MatrixSlot.I_LOCKED;
+        else if (mino instanceof J) type = MatrixSlot.J_LOCKED;
+        else if (mino instanceof L) type = MatrixSlot.L_LOCKED;
+        else if (mino instanceof O) type = MatrixSlot.O_LOCKED;
+        else if (mino instanceof S) type = MatrixSlot.S_LOCKED;
+        else if (mino instanceof Z) type = MatrixSlot.Z_LOCKED;
+        else if (mino instanceof T) type = MatrixSlot.T_LOCKED;
+
         for (Offset offset : mino.getArray())
-            setSlot(row + offset.getY(), col + offset.getX(), MatrixSlot.FILLED);
+            setSlot(row + offset.getY(), col + offset.getX(), type);
     }
 
     @Override

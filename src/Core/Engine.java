@@ -3,9 +3,7 @@ package Core;
 import Core.queue.MinoPickStrategy;
 import Core.rotation.RotationStrategy;
 import Core.scoring.ScoringStrategy;
-import Core.tetriminos.Offset;
-import Core.tetriminos.T;
-import Core.tetriminos.Tetrimino;
+import Core.tetriminos.*;
 
 public class Engine {
 
@@ -122,7 +120,7 @@ public class Engine {
 
         // Clear lines TODO optimize this to check only possible lines
         int lines = 0;
-        for (int row = yPos+4; row > yPos; row--) {
+        for (int row = yPos + 3; row >= Math.max(yPos, 1); row--) {
             if(matrix.isFull(row)) {
                 matrix.clearRow(row);
                 lines++;
@@ -217,7 +215,15 @@ public class Engine {
         if (matrix.slotIsEmpty(row, col)) {
             // Check if the current mino occupies the space
             for (Offset offset : mino.getArray()) {
-                if (yPos + offset.getY() == row && xPos + offset.getX() == col) return Matrix.MatrixSlot.FILLED;
+                if (yPos + offset.getY() == row && xPos + offset.getX() == col) {
+                    if      (mino instanceof I) return Matrix.MatrixSlot.I_OPEN;
+                    else if (mino instanceof J) return Matrix.MatrixSlot.J_OPEN;
+                    else if (mino instanceof L) return Matrix.MatrixSlot.L_OPEN;
+                    else if (mino instanceof O) return Matrix.MatrixSlot.O_OPEN;
+                    else if (mino instanceof S) return Matrix.MatrixSlot.S_OPEN;
+                    else if (mino instanceof Z) return Matrix.MatrixSlot.Z_OPEN;
+                    else if (mino instanceof T) return Matrix.MatrixSlot.T_OPEN;
+                }
                 if (ghostYPos + offset.getY() == row && xPos + offset.getX() == col) return Matrix.MatrixSlot.GHOST;
             }
             return Matrix.MatrixSlot.EMPTY;

@@ -25,7 +25,7 @@ public class TGM2MinoPick implements MinoPickStrategy {
     public Tetrimino getTetrimino() {
         int random = 0;
         for (int tries = 0; tries < 6; tries++) {
-            random = (int) Math.random() * (first ? 4 : 7); // Don't pick S, Z or O as first mino
+            random = (int) (Math.random() * (first ? 4 : 7)); // Don't pick S, Z or O as first mino
             if (memoryContains(random)) continue;
             break;
         }
