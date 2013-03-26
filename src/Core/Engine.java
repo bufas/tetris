@@ -113,12 +113,13 @@ public class Engine {
      * Lock a tetrimino to the matrix and spawn the next one
      */
     private void lockPiece() {
+        Move thisMove = Move.NONE;
+        boolean possibleMatrixClean = false;
+        boolean spinUnder = spinUnder();
+
         matrix.lockMino(mino, yPos, xPos);
 
-        Move thisMove;
-        boolean possibleMatrixClean = false;
-
-        // Clear lines TODO optimize this to check only possible lines
+        // Clear lines
         int lines = 0;
         for (int row = yPos + 3; row >= Math.max(yPos, 1); row--) {
             if(matrix.isFull(row)) {
@@ -129,7 +130,14 @@ public class Engine {
         }
 
         // Was it a T-spin?
-        thisMove = detectTSpin(lines);
+        if (spinUnder && lines == 1 && mino instanceof T) {
+            notifyHelper.notifyTspin(lastLockdown == Move.TSPIN);
+            thisMove = Move.TSPIN;
+        }
+        else if (spinUnder && lines == 2 && mino instanceof T) {
+            notifyHelper.notifyTspinDouble(lastLockdown == Move.TSPINDOUBLE);
+            thisMove = Move.TSPINDOUBLE;
+        }
 
         if (thisMove == Move.NONE && lines > 0) {
             switch (lines) {
@@ -163,30 +171,16 @@ public class Engine {
     }
 
     /**
-     * Detects if the current piece is in a T-spin position and notifies the
-     * observers if it is.
-     * @param lines the number of lines cleared in the move
-     * @return the type of T-spin or Move.NONE if no T-spin was detected
+     * Determine if the mino was spun under other locked minos. This must
+     * be called before the current mino is locked into the matrix.
+     * @return true if the mino was spun under locked minos, false otherwise
      */
-    private Move detectTSpin(int lines) {
-        if (lines > 0 && mino instanceof T) {
-            for (Offset offset : mino.getArray()) {
-                if (!matrix.slotIsEmpty(yPos + offset.getY() + 1, xPos + offset.getX())) {
-                    // We have got a T-spin
-                    if (lines == 1) {
-                        notifyHelper.notifyTspin(lastLockdown == Move.TSPIN);
-                        System.out.println("TSPIN");
-                        return Move.TSPIN;
-                    }
-                    if (lines == 2) {
-                        notifyHelper.notifyTspinDouble(lastLockdown == Move.TSPINDOUBLE);
-                        System.out.println("TSPINDOUBLE");
-                        return Move.TSPINDOUBLE;
-                    }
-                }
-            }
+    private boolean spinUnder() {
+        for (Offset offset : mino.getArray()) {
+            if (!matrix.slotIsEmpty(yPos + offset.getY() + 1, xPos + offset.getX()))
+                return true;
         }
-        return Move.NONE;
+        return false;
     }
 
     /**
