@@ -25,6 +25,11 @@ public interface Matrix {
     public MatrixSlot getSlot(int row, int col);
 
     /**
+     * Get the y-coordinate of the ghost piece
+     */
+    public int getGhostYCoordinate(int row, int col, Tetrimino mino);
+
+    /**
      * Shorthand for isCollision(row, col, mino, Tetrimino.Rotation.ROTATE0)
      */
     public boolean isCollision(int row, int col, Tetrimino mino);

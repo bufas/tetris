@@ -24,6 +24,15 @@ public class MatrixImpl implements Matrix {
     }
 
     @Override
+    public int getGhostYCoordinate(int row, int col, Tetrimino mino) {
+        int result = row;
+        while(!isCollision(result-1, col, mino)) {
+            result--;
+        }
+        return result;
+    }
+
+    @Override
     public boolean isCollision(int row, int col, Tetrimino mino) {
         return isCollision(row, col, mino, Tetrimino.Rotation.ROTATE0);
     }

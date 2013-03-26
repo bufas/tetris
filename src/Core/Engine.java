@@ -122,7 +122,7 @@ public class Engine {
 
         // Clear lines TODO optimize this to check only possible lines
         int lines = 0;
-        for (int row = 20; row > 0; row--) {
+        for (int row = yPos+4; row > yPos; row--) {
             if(matrix.isFull(row)) {
                 matrix.clearRow(row);
                 lines++;
@@ -213,12 +213,12 @@ public class Engine {
      * @return the status of the queried slot
      */
     public Matrix.MatrixSlot getSlot(int row, int col) {
+        int ghostYPos = matrix.getGhostYCoordinate(yPos, xPos, mino);
         if (matrix.slotIsEmpty(row, col)) {
             // Check if the current mino occupies the space
             for (Offset offset : mino.getArray()) {
-                if (yPos + offset.getY() == row && xPos + offset.getX() == col) {
-                    return Matrix.MatrixSlot.FILLED;
-                }
+                if (yPos + offset.getY() == row && xPos + offset.getX() == col) return Matrix.MatrixSlot.FILLED;
+                if (ghostYPos + offset.getY() == row && xPos + offset.getX() == col) return Matrix.MatrixSlot.GHOST;
             }
             return Matrix.MatrixSlot.EMPTY;
         }

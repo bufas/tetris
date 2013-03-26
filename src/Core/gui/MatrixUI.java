@@ -69,6 +69,9 @@ public class MatrixUI extends JFrame {
                         if (game.getSlot(row, col) == Matrix.MatrixSlot.FILLED) {
                             g.setColor(Color.BLUE);
                             g.fillRect(xPos + (col-1) * 17, yPos + partialRowHeight + (20-row) * 17, 15, 15);
+                        } else if (game.getSlot(row, col) == Matrix.MatrixSlot.GHOST) {
+                            g.setColor(Color.DARK_GRAY);
+                            g.fillRect(xPos + (col-1) * 17, yPos + partialRowHeight + (20-row) * 17, 15, 15);
                         } else {
                             g.setColor(Color.LIGHT_GRAY);
                             g.drawRect(xPos + (col-1) * 17, yPos + partialRowHeight + (20-row) * 17, 15, 15);
