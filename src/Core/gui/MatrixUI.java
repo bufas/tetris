@@ -107,7 +107,7 @@ public class MatrixUI extends JFrame {
             case Z_OPEN:
             case Z_LOCKED: return Color.RED;
             case T_OPEN:
-            case T_LOCKED: return new Color(255, 0, 255);
+            case T_LOCKED: return Color.MAGENTA;
 
             case GHOST:    return Color.LIGHT_GRAY;
             case EMPTY:    return Color.LIGHT_GRAY;
